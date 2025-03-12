@@ -123,7 +123,7 @@
 
 
 const Order = require('../models/Order');
-
+const Cart = require("../models/Cart"); // Import Cart model
 // // Create a new order
 // exports.createOrder = async (req, res) => {
 //   const { userId, items, address, paymentResponse } = req.body;
@@ -184,16 +184,101 @@ const Order = require('../models/Order');
 
 
 // Create a new order
+// exports.createOrder = async (req, res) => {
+//   const { userId, items, address, paymentResponse } = req.body;
+//   console.log("order---------------------------------------------------------------------------");
+//   console.log(userId);
+//   console.log(items);
+//   console.log(address);
+//   console.log(paymentResponse);
+//   console.log("---------------------------------------------------------------------------------");
+
+//   try {
+//     const newOrder = new Order({
+//       orderId: paymentResponse.razorpayOrderId, // Order ID from Razorpay response
+//       userId,
+//       payment: {
+//         razorpayPaymentId: paymentResponse.razorpayPaymentId,
+//         razorpayOrderId: paymentResponse.razorpayOrderId,
+//         razorpaySignature: paymentResponse.razorpaySignature,
+//         amount: paymentResponse.amount,
+//         createdAt: paymentResponse.createdAt,
+//         currency: paymentResponse.currency,
+//         receipt: paymentResponse.receipt,
+//         status: paymentResponse.status, // Assuming payment is successful
+//       },
+//       items: items.map(item => ({
+//         productId: item.productId,
+//         quantity: item.quantity,
+//         size: item.size,
+//         variantColor: item.variantColor,
+//         price: item.price, // Ensure price is included in request payload
+//         appliedDiscount: item.appliedDiscount || 0, // Default discount if not provided
+//         deliveryStatus: 'pending', // Default delivery status
+//         return: {
+//           applicable: item.return?.applicable || false, // Set default return applicability
+//           initiated: false, // Default return initiation status
+//           status: 'initiated', // Default return status
+//         },
+//       })),
+//       address: {
+//         name: address.name,
+//         mobileNumber: address.mobileNumber,
+//         pincode: address.pincode,
+//         locality: address.locality,
+//         flatNumber: address.flatNumber,
+//         landmark: address.landmark,
+//         district: address.district,
+//         state: address.state,
+//         addressType: address.addressType,
+//       },
+//     });
+
+//     // Save the order to the database
+//     await newOrder.save();
+
+//     res.status(201).json({ message: 'Order created successfully', order: newOrder });
+//   } catch (error) {
+//     console.log(error);
+//     res.status(500).json({ message: 'Error creating order', error });
+//   }
+// };
+
+
+// Create a new order
 exports.createOrder = async (req, res) => {
-  const { userId, items, address, paymentResponse } = req.body;
-  console.log("order---------------------------------------------------------------------------");
-  console.log(userId);
-  console.log(items);
-  console.log(address);
-  console.log(paymentResponse);
-  console.log("---------------------------------------------------------------------------------");
+  const { userId, address, paymentResponse } = req.body; // No need to pass items from frontend
+
+  console.log("Creating Order...");
+  console.log("User ID:", userId);
+  console.log("Address:", address);
+  console.log("Payment Response:", paymentResponse);
 
   try {
+    // **1. Fetch Cart Items from Database**
+    const cart = await Cart.findOne({ userId }).populate("items.productId");
+
+    if (!cart || cart.items.length === 0) {
+      return res.status(400).json({ message: "Cart is empty. Cannot place order." });
+    }
+
+    // **2. Process Items**
+    const orderItems = cart.items.map((item) => ({
+      productId: item.productId._id,
+      size: item.size,
+      variantColor: item.veriantColor || "", // Handle missing variantColor safely
+      quantity: item.quantity,
+      price: item.productId.price, // Get price from DB
+      appliedDiscount: 0, // Default discount
+      deliveryStatus: "pending",
+      return: {
+        applicable: false,
+        initiated: false,
+        status: "initiated",
+      },
+    }));
+
+    // **3. Create a New Order**
     const newOrder = new Order({
       orderId: paymentResponse.razorpayOrderId, // Order ID from Razorpay response
       userId,
@@ -207,20 +292,7 @@ exports.createOrder = async (req, res) => {
         receipt: paymentResponse.receipt,
         status: paymentResponse.status, // Assuming payment is successful
       },
-      items: items.map(item => ({
-        productId: item.productId,
-        quantity: item.quantity,
-        size: item.size,
-        variantColor: item.variantColor,
-        price: item.price, // Ensure price is included in request payload
-        appliedDiscount: item.appliedDiscount || 0, // Default discount if not provided
-        deliveryStatus: 'pending', // Default delivery status
-        return: {
-          applicable: item.return?.applicable || false, // Set default return applicability
-          initiated: false, // Default return initiation status
-          status: 'initiated', // Default return status
-        },
-      })),
+      items: orderItems,
       address: {
         name: address.name,
         mobileNumber: address.mobileNumber,
@@ -234,17 +306,18 @@ exports.createOrder = async (req, res) => {
       },
     });
 
-    // Save the order to the database
+    // **4. Save Order to Database**
     await newOrder.save();
 
-    res.status(201).json({ message: 'Order created successfully', order: newOrder });
+    // **5. Clear Cart After Order (Optional)**
+    await Cart.findOneAndUpdate({ userId }, { items: [] });
+
+    res.status(201).json({ message: "Order created successfully", order: newOrder });
   } catch (error) {
-    console.log(error);
-    res.status(500).json({ message: 'Error creating order', error });
+    console.error("Error creating order:", error);
+    res.status(500).json({ message: "Error creating order", error });
   }
 };
-
-
 
 
 
@@ -276,5 +349,42 @@ exports.getOrdersByUser = async (req, res) => {
     res.status(200).json(orders);
   } catch (error) {
     res.status(500).json({ message: 'Error fetching orders', error });
+  }
+};
+
+
+// Get all orders (Admin)
+exports.getAllOrders = async (req, res) => {
+  try {
+    console.log()
+    const orders = await Order.find()
+      .populate('items.productId')
+      .sort({ createdAt: -1 }); // Sort by newest first
+
+    res.status(200).json(orders);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching orders', error });
+  }
+};
+
+
+exports.updateDeliveryStatus = async (req, res) => {
+  const { orderId, productId, deliveryStatus } = req.body; // Retrieve everything from body
+
+  try {
+    // Update delivery status for the specific item in the order
+    const order = await Order.findOneAndUpdate(
+      { _id: orderId, 'items.productId': productId }, // Match productId
+      { $set: { 'items.$.deliveryStatus': deliveryStatus } }, // Update delivery status
+      { new: true } // Return updated order
+    );
+
+    if (!order) {
+      return res.status(404).json({ message: 'Order or item not found' });
+    }
+
+    res.status(200).json({ message: 'Delivery status updated successfully', order });
+  } catch (error) {
+    res.status(500).json({ message: 'Error updating delivery status', error });
   }
 };

@@ -79,31 +79,58 @@ const mongoose = require('mongoose');
 // };
 
 // Upload product image
+// exports.uploadProductImage = (req, res) => {
+//   const upload = uploadMiddleware(req.params.fieldName);
+//   upload(req, res, (err) => {
+//     if (err) {
+//       return res.status(400).json({ message: err });
+//     } else {
+//       if (!req.file) {
+//         return res.status(400).json({ message: 'No file uploaded' });
+//       } else {
+//         const imageUrl = `/uploads/${req.file.filename}`;
+//         res.status(200).json({ imageUrl });
+//       }
+//     }
+//   });
+// };
+
+
+
+
+// Upload product image
 exports.uploadProductImage = (req, res) => {
+  console.log('Field Name:', req.params.fieldName); // Log dynamic field name
   const upload = uploadMiddleware(req.params.fieldName);
+
   upload(req, res, (err) => {
     if (err) {
+      console.error('Upload Error:', err);
       return res.status(400).json({ message: err });
-    } else {
-      if (!req.file) {
-        return res.status(400).json({ message: 'No file uploaded' });
-      } else {
-        const imageUrl = `/uploads/${req.file.filename}`;
-        res.status(200).json({ imageUrl });
-      }
     }
+
+    console.log('File Received:', req.file); // Log file details
+    if (!req.file) {
+      return res.status(400).json({ message: 'No file uploaded' });
+    }
+
+    const imageUrl = `/uploads/${req.file.filename}`;
+    console.log('Generated Image URL:', imageUrl);
+    res.status(200).json({ imageUrl });
   });
 };
+
+
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 // Create a new product
 exports.createProduct = async (req, res) => {
-  const { name, description, price, category, variants } = req.body;
+  const { name, description, price,discounte, category, variants } = req.body;
   
   try {
-    const newProduct = new Product({ name, description, price, category, variants });
+    const newProduct = new Product({ name, description, price,discounte, category, variants });
     await newProduct.save();
     res.status(201).json({ message: 'Product created successfully', product: newProduct });
   } catch (error) {
@@ -160,7 +187,7 @@ exports.getProductById = async (req, res) => {
 // Update a product
 exports.updateProduct = async (req, res) => {
   const { id } = req.params;
-  const { name, description, price, category, variants } = req.body;
+  const { name, description, price,discounte, category, variants } = req.body;
 
   // Check if the provided ID is a valid MongoDB ObjectId
   if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -173,7 +200,7 @@ exports.updateProduct = async (req, res) => {
 
     const updatedProduct = await Product.findByIdAndUpdate(
       id,
-      { name, description, price, category, variants },
+      { name, description, price,discounte, category, variants },
       { new: true } // This option returns the modified document rather than the original
     );
 

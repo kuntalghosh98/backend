@@ -11,4 +11,8 @@ router.get('/:id', orderController.getOrderById);
 // Get all orders by a user
 router.get('/user/:userId', orderController.getOrdersByUser);
 
+router.get('/admin/orders', orderController.getAllOrders); // Fetch all orders
+router.patch('/admin/orders', orderController.updateDeliveryStatus); // Order ID and productId in the body
+
+
 module.exports = router;
