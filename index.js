@@ -126,7 +126,7 @@ const port = process.env.PORT || 4000;
 // Middleware
 app.use(express.json());
 app.use(cors({
-  origin: ['http://localhost:3000','http://localhost:3001'], // Replace with your frontend URL
+  origin: ['http://localhost:3000','http://localhost:3001','https://classi-aura.netlify.app/'], // Replace with your frontend URL
   credentials: true
 }));
 
