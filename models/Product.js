@@ -52,7 +52,7 @@ const sizeStockSchema = new mongoose.Schema({
 const variantSchema = new mongoose.Schema({
   color: {
     type: String,
-    required: true,
+
   },
   sizeStock: [sizeStockSchema],
   imageUrls: {
@@ -73,6 +73,9 @@ const productSchema = new mongoose.Schema({
   price: {
     type: Number,
     required: true,
+  },
+  discount: {
+    type: Number,
   },
   category: {
     type: String,

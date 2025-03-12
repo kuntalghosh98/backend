@@ -46,7 +46,7 @@ const sendOTPEmail = async (email, otp) => {
 
 exports.requestEmailOTP = async (req, res) => {
   const { email } = req.body;
-
+console.log("opt verification start");
   try {
     const otp = generateOTP();
     console.log(otp);

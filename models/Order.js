@@ -107,8 +107,8 @@ const orderSchema = new mongoose.Schema({
     {
       productId: { type: mongoose.Schema.Types.ObjectId, ref: 'Product', required: true },
       quantity: { type: Number, required: true },
-      size: { type: String, required: true },
-      variantColor: { type: String, required: true },
+      size: { type: String },
+      variantColor: { type: String },
       price: { type: Number, required: true },               // Item price
       appliedDiscount: { type: Number, default: 0 },         // Discount applied on item
       deliveryStatus: {

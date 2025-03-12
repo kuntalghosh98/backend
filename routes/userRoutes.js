@@ -18,7 +18,7 @@ router.get('/auth/google/callback', passport.authenticate('google', { failureRed
      const token = jwt.sign({ id: req.user._id }, process.env.JWT_SECRET, { expiresIn: '10h' });
     
     // Successful authentication, redirect home or send a JWT token
-    res.redirect(`http://localhost:3000/loginloading?token=${token}`); // or handle JWT token response
+    res.redirect(`http://localhost:3000/LoginRegister?token=${token}`); // or handle JWT token response
   }
 );
 // Get user details

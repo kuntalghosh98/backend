@@ -11,6 +11,10 @@ const cardSchema = new Schema({
     type: String,
     required: true,
   },
+  insideimage: {
+    type: String,
+    required: true,
+  },
 });
 
 const bannerSchema = new Schema({
