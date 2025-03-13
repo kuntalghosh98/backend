@@ -8,7 +8,7 @@ const { protect } = require('../middleware/authMiddleware');
 router.post('/register', registerUser);
 router.post('/login', loginUser);
 
-
+const url=process.env.BASE_URL
 // Google authentication routes
 router.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 
@@ -18,7 +18,7 @@ router.get('/auth/google/callback', passport.authenticate('google', { failureRed
      const token = jwt.sign({ id: req.user._id }, process.env.JWT_SECRET, { expiresIn: '10h' });
     
     // Successful authentication, redirect home or send a JWT token
-    res.redirect(`http://localhost:3000/LoginRegister?token=${token}`); // or handle JWT token response
+    res.redirect(`${url}/LoginRegister?token=${token}`); // or handle JWT token response
   }
 );
 // Get user details
