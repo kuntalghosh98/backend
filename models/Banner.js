@@ -1,31 +1,40 @@
 // models/Banner.js
 const mongoose = require('mongoose');
-const Schema = mongoose.Schema;
 
-const cardSchema = new Schema({
+const cardSchema = new mongoose.Schema({
   categoryName: {
     type: String,
     required: true,
+    trim: true,
   },
   image: {
     type: String,
     required: true,
+    trim: true,
   },
   insideimage: {
     type: String,
     required: true,
+    trim: true,
   },
 });
 
-const bannerSchema = new Schema({
+const bannerSchema = new mongoose.Schema({
   bannerNumber: {
     type: Number,
     required: true,
     unique: true,
+    min: 1,
   },
-  cards: [cardSchema], // Array of card objects
-});
+  cards: {
+    type: [cardSchema],
+    validate: [arrayLimit, 'Maximum 10 cards allowed per banner'],
+  },
+}, { timestamps: true });
 
-const Banner = mongoose.model('Banner', bannerSchema);
+function arrayLimit(val) {
+  return val.length <= 10;
+}
 
-module.exports = Banner;
+module.exports = mongoose.model('Banner', bannerSchema);
+

@@ -27,9 +27,7 @@ const addressSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  landmark: {
-    type: String,
-  },
+  landmark: String,
   district: {
     type: String,
     required: true,
@@ -39,17 +37,14 @@ const addressSchema = new mongoose.Schema({
     required: true,
   },
   addressType: {
-    type: String, // e.g., 'Home', 'Work'
+    type: String,
     required: true,
   },
   isDefault: {
     type: Boolean,
     default: false,
   },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-});
+}, { timestamps: true });
 
 module.exports = mongoose.model('Address', addressSchema);
+

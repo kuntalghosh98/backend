@@ -1,4 +1,3 @@
-// models/NewArrivals.js
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
@@ -9,8 +8,8 @@ const newArrivalsSchema = new Schema({
       ref: 'Product',
     },
   ],
+}, {
+  timestamps: true, // Useful for admin tracking
 });
 
-const NewArrivals = mongoose.model('NewArrivals', newArrivalsSchema);
-
-module.exports = NewArrivals;
+module.exports = mongoose.model('NewArrivals', newArrivalsSchema);

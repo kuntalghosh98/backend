@@ -1,12 +1,19 @@
+// const express = require('express');
+// const router = express.Router();
+// const { createOrder, verifyPayment } = require('../controllers/paymentController');
+
+// router.post('/razorpay/create-order', createOrder);
+// router.post('/razorpay/verify-payment', verifyPayment);
+
+// module.exports = router;
+
+
 const express = require('express');
-const { createOrder, verifyPayment } = require('../controllers/paymentController');
-
 const router = express.Router();
+const { createOrder, verifyPayment } = require('../controllers/paymentController');
+const protect = require('../middleware/authMiddleware');
 
-// Create order route
-router.post('/order', createOrder);
-
-// Verify payment route
-router.post('/verify', verifyPayment);
+router.post('/razorpay/create-order', protect, createOrder);
+router.post('/razorpay/verify-payment', protect, verifyPayment); // 🛡️ protected now
 
 module.exports = router;

@@ -1,25 +1,19 @@
-// backend/routes/productRoutes.js
+// routes/productRoutes.js
 const express = require('express');
 const {
-    createProduct,
-    getProducts,
-    getProductById,
-    updateProduct,
-    deleteProduct,
-    uploadProductImage
-    
+  createProduct,
+  getProducts,
+  getProductById,
+  updateProduct,
+  deleteProduct,
 } = require('../controllers/productController');
-const upload = require('../middleware/uploadMiddleware'); // Import the multer middleware
+const protect = require('../middleware/authMiddleware');
 const router = express.Router();
 
-
-
-
-router.post('/upload/:fieldName', uploadProductImage);
-router.post('/add', createProduct);
 router.get('/', getProducts);
 router.get('/:id', getProductById);
-router.put('/:id', updateProduct); // Include upload middleware for updating products
-router.delete('/:id', deleteProduct);
+router.post('/add', protect, createProduct);
+router.put('/:id', protect, updateProduct);
+router.delete('/:id', protect, deleteProduct);
 
 module.exports = router;

@@ -1,15 +1,16 @@
 // routes/bannerRoutes.js
 const express = require('express');
+const {
+  addOrUpdateBanner,
+  getAllBanners,
+  getBannerByNumber
+} = require('../controllers/bannerController');
+const protect = require('../middleware/authMiddleware');
+
 const router = express.Router();
-const bannerController = require('../controllers/bannerController');
 
-// Add or update a banner with cards
-router.post('/add-or-update', bannerController.addOrUpdateBanner);
-
-// Get all banners
-router.get('/', bannerController.getAllBanners);
-
-// Get banner by bannerNumber
-router.get('/:bannerNumber', bannerController.getBannerByNumber);
+router.post('/add-or-update', protect, addOrUpdateBanner);
+router.get('/', getAllBanners);
+router.get('/:bannerNumber', getBannerByNumber);
 
 module.exports = router;

@@ -1,33 +1,47 @@
-//backend\config\passport.js
+// backend/config/passport.js
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const User = require('../models/User');
+const getBaseUrl = require('../utils/getBaseUrl');
+const url = 'http://localhost:8080';
 
-passport.use(new GoogleStrategy({
-  clientID: process.env.GOOGLE_CLIENT_ID,
-  clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-  callbackURL: 'https://classic-aura-backend.up.railway.app/api/users/auth/google/callback'
-},
-async (token, tokenSecret, profile, done) => {
-  // Find or create user in database
-  try {
-    let user = await User.findOne({ googleId: profile.id });
+passport.use(new GoogleStrategy(
+  {
+    clientID: process.env.GOOGLE_CLIENT_ID,
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    callbackURL: `${url}/api/users/auth/google/callback`,
+  },
+  async (token, tokenSecret, profile, done) => {
+    try {
+      const email = profile.emails?.[0]?.value;
 
-    if (!user) {
-      user = new User({
-        googleId: profile.id,
-        name: profile.displayName,
-        email: profile.emails[0].value,
+      // Try to find user by googleId or email
+      let user = await User.findOne({
+        $or: [{ googleId: profile.id }, { email }],
       });
 
-      await user.save();
-    }
+      if (user) {
+        // If user exists but googleId is not set (came from OTP flow)
+        if (!user.googleId) {
+          user.googleId = profile.id;
+          await user.save();
+        }
+      } else {
+        // Create new user
+        user = new User({
+          googleId: profile.id,
+          name: profile.displayName,
+          email,
+        });
+        await user.save();
+      }
 
-    return done(null, user);
-  } catch (err) {
-    return done(err, null);
+      return done(null, user);
+    } catch (err) {
+      return done(err, null);
+    }
   }
-}));
+));
 
 passport.serializeUser((user, done) => {
   done(null, user.id);
@@ -43,6 +57,3 @@ passport.deserializeUser(async (id, done) => {
 });
 
 module.exports = passport;
-
-
-
