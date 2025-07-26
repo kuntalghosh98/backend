@@ -1,11 +1,19 @@
+// routes/productScrollListRoutes.js
 const express = require('express');
+const {
+  getAllScrollLists,
+  getScrollListById,
+  addScrollList,
+  editScrollList,
+  deleteScrollList
+} = require('../controllers/productScrollListController');
+const protect = require('../middleware/authMiddleware');
 const router = express.Router();
-const productScrollListController = require('../controllers/productScrollListController');
 
-router.get('/', productScrollListController.getAllScrollLists);
-router.get('/:id', productScrollListController.getScrollListById);
-router.post('/add', productScrollListController.addScrollList);
-router.put('/edit/:id', productScrollListController.editScrollList);
-router.delete('/delete/:id', productScrollListController.deleteScrollList);
+router.get('/', getAllScrollLists);
+router.get('/:id', getScrollListById);
+router.post('/add', protect, addScrollList);
+router.put('/edit/:id', protect, editScrollList);
+router.delete('/delete/:id', protect, deleteScrollList);
 
 module.exports = router;

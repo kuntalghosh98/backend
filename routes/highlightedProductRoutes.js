@@ -1,15 +1,16 @@
 // routes/highlightedProductRoutes.js
 const express = require('express');
+const {
+  addHighlightedProduct,
+  updateHighlightedProduct,
+  getHighlightedProducts,
+} = require('../controllers/highlightedProductController');
+const protect = require('../middleware/authMiddleware');
+
 const router = express.Router();
-const highlightedProductController = require('../controllers/highlightedProductController');
 
-// Add a highlighted product
-router.post('/add', highlightedProductController.addHighlightedProduct);
-
-// Update a highlighted product
-router.put('/update', highlightedProductController.updateHighlightedProduct);
-
-// Get all highlighted products
-router.get('/', highlightedProductController.getHighlightedProducts);
+router.post('/add', protect, addHighlightedProduct);
+router.put('/update', protect, updateHighlightedProduct);
+router.get('/', getHighlightedProducts);
 
 module.exports = router;

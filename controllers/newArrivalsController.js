@@ -1,44 +1,47 @@
-// controllers/newArrivalsController.js
 const NewArrivals = require('../models/NewArrivals');
 
-// Add a product to new arrivals
+// ✅ Add product to new arrivals (queue style, limit 20)
 exports.addNewArrival = async (req, res) => {
   const { productId } = req.body;
+
+  if (!productId) {
+    return res.status(400).json({ message: 'Product ID is required' });
+  }
 
   try {
     let newArrivals = await NewArrivals.findOne();
 
-    // If newArrivals list doesn't exist, create one
     if (!newArrivals) {
       newArrivals = new NewArrivals({ products: [] });
     }
 
-    // Check if product is already in new arrivals list
-    if (newArrivals.products.includes(productId)) {
-      return res.status(400).json({ message: 'Product is already in new arrivals list' });
+    const alreadyExists = newArrivals.products.some(
+      (id) => id.toString() === productId
+    );
+
+    if (alreadyExists) {
+      return res.status(409).json({ message: 'Product already in new arrivals' });
     }
 
-    // Add product to the front of the array (to behave like a queue)
     newArrivals.products.unshift(productId);
 
-    // Limit to 20 items
     if (newArrivals.products.length > 20) {
-      newArrivals.products.pop(); // Remove oldest item if exceeding limit
+      newArrivals.products.pop();
     }
 
     await newArrivals.save();
     res.status(200).json({ message: 'Product added to new arrivals', newArrivals });
   } catch (error) {
-    res.status(500).json({ message: 'Error adding product to new arrivals', error });
+    res.status(500).json({ message: 'Failed to add product to new arrivals', error });
   }
 };
 
-// Fetch all new arrivals
+// ✅ Get all new arrivals
 exports.getNewArrivals = async (req, res) => {
   try {
     const newArrivals = await NewArrivals.findOne().populate('products');
 
-    if (!newArrivals) {
+    if (!newArrivals || newArrivals.products.length === 0) {
       return res.status(404).json({ message: 'No new arrivals found' });
     }
 
@@ -48,14 +51,37 @@ exports.getNewArrivals = async (req, res) => {
   }
 };
 
-
-
-// Clear new arrivals list
+// ✅ Clear new arrivals list
 exports.clearNewArrivals = async (req, res) => {
-    try {
-      await NewArrivals.updateOne({}, { products: [] });
-      res.status(200).json({ message: 'New arrivals cleared successfully' });
-    } catch (error) {
-      res.status(500).json({ message: 'Error clearing new arrivals', error });
+  try {
+    const result = await NewArrivals.updateOne({}, { $set: { products: [] } });
+
+    if (result.modifiedCount === 0) {
+      return res.status(404).json({ message: 'No new arrivals list found to clear' });
     }
-  };
+
+    res.status(200).json({ message: 'New arrivals cleared successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Error clearing new arrivals', error });
+  }
+};
+
+
+// ✅ Remove individual product
+exports.removeNewArrival = async (req, res) => {
+  const { productId } = req.params;
+
+  try {
+    const result = await NewArrivals.updateOne({}, {
+      $pull: { products: productId }
+    });
+
+    if (result.modifiedCount === 0) {
+      return res.status(404).json({ message: 'Product not found in new arrivals' });
+    }
+
+    res.status(200).json({ message: 'Product removed from new arrivals' });
+  } catch (error) {
+    res.status(500).json({ message: 'Error removing product', error });
+  }
+};

@@ -1,103 +1,97 @@
 // controllers/addressController.js
 const Address = require('../models/Address');
 
-// Add new address
 exports.addAddress = async (req, res) => {
   const {
-    userId, name, mobileNumber, pincode, locality, flatNumber, landmark, district, state, addressType, isDefault
+    userId, name, mobileNumber, pincode, locality,
+    flatNumber, landmark, district, state, addressType, isDefault
   } = req.body;
+
+  if (!userId || !name || !mobileNumber || !pincode || !locality || !flatNumber || !district || !state || !addressType) {
+    return res.status(400).json({ message: 'Missing required fields' });
+  }
 
   try {
     if (isDefault) {
-      // If this is marked as the default, set all other addresses to not be default
       await Address.updateMany({ userId }, { $set: { isDefault: false } });
     }
 
     const newAddress = new Address({
-      userId, name, mobileNumber, pincode, locality, flatNumber, landmark, district, state, addressType, isDefault
+      userId, name, mobileNumber, pincode, locality,
+      flatNumber, landmark, district, state, addressType, isDefault
     });
-    await newAddress.save();
 
+    await newAddress.save();
     res.status(201).json({ message: 'Address added successfully', address: newAddress });
   } catch (error) {
-    res.status(500).json({ message: 'Error adding address', error });
+    res.status(500).json({ message: 'Error adding address', error: error.message || error });
   }
 };
 
-// Get all addresses for a user
 exports.getAddresses = async (req, res) => {
   const { userId } = req.params;
+  if (!userId) return res.status(400).json({ message: 'Missing userId' });
 
   try {
     const addresses = await Address.find({ userId });
     res.status(200).json(addresses);
   } catch (error) {
-    res.status(500).json({ message: 'Error fetching addresses', error });
+    res.status(500).json({ message: 'Error fetching addresses', error: error.message || error });
   }
 };
 
-// Update address
 exports.updateAddress = async (req, res) => {
   const { id } = req.params;
   const {
-    name, mobileNumber, pincode, locality, flatNumber, landmark, district, state, addressType, isDefault
+    userId, name, mobileNumber, pincode, locality,
+    flatNumber, landmark, district, state, addressType, isDefault
   } = req.body;
+
+  if (!id || !userId) return res.status(400).json({ message: 'Missing id or userId' });
 
   try {
     if (isDefault) {
-      // If this is marked as the default, set all other addresses to not be default
-      await Address.updateMany({ userId: req.body.userId }, { $set: { isDefault: false } });
+      await Address.updateMany({ userId }, { $set: { isDefault: false } });
     }
 
-    const updatedAddress = await Address.findByIdAndUpdate(
-      id,
-      { name, mobileNumber, pincode, locality, flatNumber, landmark, district, state, addressType, isDefault },
-      { new: true }
-    );
+    const updated = await Address.findByIdAndUpdate(id, {
+      name, mobileNumber, pincode, locality, flatNumber,
+      landmark, district, state, addressType, isDefault
+    }, { new: true });
 
-    if (!updatedAddress) {
-      return res.status(404).json({ message: 'Address not found' });
-    }
-
-    res.status(200).json({ message: 'Address updated successfully', address: updatedAddress });
+    if (!updated) return res.status(404).json({ message: 'Address not found' });
+    res.status(200).json({ message: 'Address updated successfully', address: updated });
   } catch (error) {
-    res.status(500).json({ message: 'Error updating address', error });
+    res.status(500).json({ message: 'Error updating address', error: error.message || error });
   }
 };
 
-// Delete an address
 exports.deleteAddress = async (req, res) => {
   const { id } = req.params;
+  if (!id) return res.status(400).json({ message: 'Missing address id' });
 
   try {
-    const deletedAddress = await Address.findByIdAndDelete(id);
-    if (!deletedAddress) {
-      return res.status(404).json({ message: 'Address not found' });
-    }
-
+    const deleted = await Address.findByIdAndDelete(id);
+    if (!deleted) return res.status(404).json({ message: 'Address not found' });
     res.status(200).json({ message: 'Address deleted successfully' });
   } catch (error) {
-    res.status(500).json({ message: 'Error deleting address', error });
+    res.status(500).json({ message: 'Error deleting address', error: error.message || error });
   }
 };
 
-// Set default address
 exports.setDefaultAddress = async (req, res) => {
   const { id, userId } = req.body;
+  if (!id || !userId) return res.status(400).json({ message: 'Missing id or userId' });
 
   try {
-    // Set all other addresses to not be default
     await Address.updateMany({ userId }, { $set: { isDefault: false } });
+    const updated = await Address.findByIdAndUpdate(id, { $set: { isDefault: true } }, { new: true });
 
-    // Set the selected address as default
-    const defaultAddress = await Address.findByIdAndUpdate(id, { $set: { isDefault: true } }, { new: true });
-
-    if (!defaultAddress) {
-      return res.status(404).json({ message: 'Address not found' });
-    }
-
-    res.status(200).json({ message: 'Default address set', address: defaultAddress });
+    if (!updated) return res.status(404).json({ message: 'Address not found' });
+    res.status(200).json({ message: 'Default address set', address: updated });
   } catch (error) {
-    res.status(500).json({ message: 'Error setting default address', error });
+    res.status(500).json({ message: 'Error setting default address', error: error.message || error });
   }
 };
+
+

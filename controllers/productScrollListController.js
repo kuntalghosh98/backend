@@ -1,50 +1,46 @@
+// controllers/productScrollListController.js
 const ProductScrollList = require('../models/ProductScrollList');
 
-// ✅ Get All Product Scroll Lists
 exports.getAllScrollLists = async (req, res) => {
   try {
     const lists = await ProductScrollList.find().populate('productIds');
-    res.json(lists);
+    res.status(200).json({ success: true, data: lists });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ success: false, message: 'Server error', error });
   }
 };
 
-// ✅ Get Single List by ID
 exports.getScrollListById = async (req, res) => {
   try {
     const list = await ProductScrollList.findById(req.params.id).populate('productIds');
-    if (!list) return res.status(404).json({ message: 'List not found' });
-    res.json(list);
+    if (!list) return res.status(404).json({ success: false, message: 'List not found' });
+    res.status(200).json({ success: true, data: list });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ success: false, message: 'Server error', error });
   }
 };
 
-// ✅ Add New Scroll List
 exports.addScrollList = async (req, res) => {
   try {
     const { name, description, listNumber, productIds } = req.body;
 
-    if (productIds.length > 20) {
-      return res.status(400).json({ message: 'Max 20 product IDs allowed' });
+    if (productIds?.length > 20) {
+      return res.status(400).json({ success: false, message: 'Max 20 product IDs allowed' });
     }
 
-    const newList = new ProductScrollList({ name, description, listNumber, productIds });
-    await newList.save();
-    res.status(201).json(newList);
+    const newList = await ProductScrollList.create({ name, description, listNumber, productIds });
+    res.status(201).json({ success: true, data: newList });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ success: false, message: 'Error creating scroll list', error });
   }
 };
 
-// ✅ Edit Scroll List
 exports.editScrollList = async (req, res) => {
   try {
     const { name, description, listNumber, productIds } = req.body;
 
-    if (productIds && productIds.length > 20) {
-      return res.status(400).json({ message: 'Max 20 product IDs allowed' });
+    if (productIds?.length > 20) {
+      return res.status(400).json({ success: false, message: 'Max 20 product IDs allowed' });
     }
 
     const updatedList = await ProductScrollList.findByIdAndUpdate(
@@ -53,22 +49,21 @@ exports.editScrollList = async (req, res) => {
       { new: true }
     );
 
-    if (!updatedList) return res.status(404).json({ message: 'List not found' });
+    if (!updatedList) return res.status(404).json({ success: false, message: 'List not found' });
 
-    res.json(updatedList);
+    res.status(200).json({ success: true, data: updatedList });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ success: false, message: 'Error updating scroll list', error });
   }
 };
 
-// ✅ Delete Scroll List
 exports.deleteScrollList = async (req, res) => {
   try {
     const deletedList = await ProductScrollList.findByIdAndDelete(req.params.id);
-    if (!deletedList) return res.status(404).json({ message: 'List not found' });
+    if (!deletedList) return res.status(404).json({ success: false, message: 'List not found' });
 
-    res.json({ message: 'List deleted successfully' });
+    res.status(200).json({ success: true, message: 'List deleted successfully' });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ success: false, message: 'Error deleting scroll list', error });
   }
 };
