@@ -3,7 +3,7 @@ const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const User = require('../models/User');
 const getBaseUrl = require('../utils/getBaseUrl');
-const url = 'http://localhost:8080';
+const url = process.env.BASE_URL;
 
 passport.use(new GoogleStrategy(
   {
