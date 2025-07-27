@@ -36,8 +36,8 @@ const allowedOrigins = [
   'http://localhost:3001',
   'https://yourdomain.com',
   'https://admin.yourdomain.com',
-  'https://www.auriusluxury.com/',
-  'https://frontend-eta-one-16.vercel.app/',
+  'https://www.auriusluxury.com',
+  'https://frontend-eta-one-16.vercel.app',
 ];
 
 app.use(cors({
