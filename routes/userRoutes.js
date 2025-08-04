@@ -7,7 +7,7 @@ const jwt = require('jsonwebtoken');
 const protect = require('../middleware/authMiddleware');
 const getBaseUrl = require('../utils/getBaseUrl');
 const url = getBaseUrl();
-const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000'; // Fallback URL if FRONTEND_URL is not set
+const frontendUrl =  'http://localhost:3000'; // Fallback URL if FRONTEND_URL is not set
 router.post('/register', registerUser);
 router.post('/login', loginUser);
 
