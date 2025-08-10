@@ -1,7 +1,7 @@
 // routes/userRoutes.js
 const express = require('express');
 const router = express.Router();
-const { registerUser, loginUser, getUser } = require('../controllers/userController');
+const { registerUser, loginUser, getUser , updateProfile} = require('../controllers/userController');
 const passport = require('../config/passport');
 const jwt = require('jsonwebtoken');
 const protect = require('../middleware/authMiddleware');
@@ -21,7 +21,7 @@ router.get('/auth/google/callback',
     res.redirect(`${frontendUrl}/loginregister?token=${token}`);
   }
 );
-router.patch('/profile/update-profile', protect, userController.updateProfile);
+router.patch('/profile/update-profile', protect, updateProfile);
 router.get('/profile', protect, getUser);
 
 module.exports = router;
