@@ -21,7 +21,7 @@ router.get('/auth/google/callback',
     res.redirect(`${frontendUrl}/loginregister?token=${token}`);
   }
 );
-router.patch('/profile/update-profile', protect, updateProfile);
+router.put('/profile/update-profile', protect, updateProfile);
 router.get('/profile', protect, getUser);
 
 module.exports = router;
