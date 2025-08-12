@@ -43,7 +43,7 @@ exports.createOrder = async (req, res) => {
     });
 
     await newOrder.save();
-    await Cart.findOneAndUpdate({ userId }, { items: [] });
+    // await Cart.findOneAndUpdate({ userId }, { items: [] });
     res.status(201).json({ message: 'Order created successfully', order: newOrder });
   } catch (error) {
     res.status(500).json({ message: 'Error creating order', error });
