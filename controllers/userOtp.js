@@ -6,6 +6,60 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const nodemailer = require('nodemailer'); // For sending OTP via email
 
+const { google } = require("googleapis");
+
+const oAuth2Client = new google.auth.OAuth2(
+  process.env.GOOGLE_CLIENT_ID,
+  process.env.GOOGLE_CLIENT_SECRET,
+  "https://developers.google.com/oauthplayground" // redirect URI
+);
+
+oAuth2Client.setCredentials({ refresh_token: process.env.GMAIL_REFRESH_TOKEN });
+
+// const sendOTPEmail = async (email, otp) => {
+//   try {
+//     // get fresh access token each time
+//     const accessToken = await oAuth2Client.getAccessToken();
+
+//     const transporter = nodemailer.createTransport({
+//       service: "gmail",
+//       auth: {
+//         type: "OAuth2",
+//         user: process.env.SMTP_USER,
+//         clientId: process.env.GOOGLE_CLIENT_ID,
+//         clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+//         refreshToken: process.env.GMAIL_REFRESH_TOKEN,
+//         accessToken: accessToken?.token || accessToken,
+//       },
+//     });
+
+//     const htmlContent = `
+//       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #eaeaea; border-radius: 5px; background-color: #f9f9f9;">
+//         <h2 style="color: #333;">OTP Verification</h2>
+//         <p style="font-size: 16px; color: #666;">Your OTP for verification is:</p>
+//         <div style="padding: 10px; background-color: #e0e0e0; text-align: center; border-radius: 5px; margin: 20px 0;">
+//           <span style="font-size: 24px; font-weight: bold;">${otp}</span>
+//         </div>
+//         <p style="font-size: 14px; color: #999;">If you did not request this OTP, please ignore this email.</p>
+//       </div>
+//     `;
+
+//     const info = await transporter.sendMail({
+//       from: `Aurius <${process.env.SMTP_USER}>`,
+//       to: email,
+//       subject: "OTP Verification",
+//       text: `Your OTP for verification is ${otp}`,
+//       html: htmlContent,
+//     });
+
+//     console.log("Message sent: %s", info.messageId);
+//   } catch (error) {
+//     console.error("Error sending OTP email:", error);
+//     throw error;
+//   }
+// };
+
+
 const generateOTP = () => {
   return Math.floor(100000 + Math.random() * 900000).toString(); // Generate a 6-digit OTP
 };
