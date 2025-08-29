@@ -16,6 +16,9 @@ const oAuth2Client = new google.auth.OAuth2(
 
 oAuth2Client.setCredentials({ refresh_token: process.env.GMAIL_REFRESH_TOKEN });
 
+
+//1234
+
 // const sendOTPEmail = async (email, otp) => {
 //   try {
 //     // get fresh access token each time
